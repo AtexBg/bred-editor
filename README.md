@@ -3,9 +3,10 @@
 ![The banner](cia/banner_upscaled.png)
 
 ## What is it?
-The **bred-editor** (standing for *blue/red save editor*) is a very simple save editor for Pokémon Red/Blue on the 3DS, it's still W.I.P (work in progress) but many features are planned to be added later.
+### The **bred-editor** (standing for "*blue/red save editor*") is a very simple save editor for Pokémon Red/Blue on the 3DS, it's still W.I.P (work in progress) but many features are planned to be added later.
 
 The current version is the `beta0.1.0`, having the following features :
+
     - Reading some informations about the save (including Player/Rival name, playtime, money, playerID and initial checksum)
     - Editing the Player/Rival names, the money amount and the playtime
     - Properly saving the file and fixing the checksum
@@ -23,9 +24,9 @@ Then you can press SELECT on the main menu to **write all changes to the file**.
 ## Screenshots
 ![Main Menu](pictures/mainmenu.bmp)
 ---------------------------------
-![pic](pictures/saveinfo.bmp)
+![Save Information Menu](pictures/saveinfo.bmp)
 ---------------------------------
-![pic](pictures/playtime.bmp)
+![Playtime Change Menu](pictures/playtime.bmp)
 
 
 ## Future updates
@@ -34,7 +35,7 @@ I'm still working on the project and in the future i will add the following feat
 - Editing the data of the Pokémons themselves (that will be funny mmhhhh)
 - **Maybe** embed a little emulator inside the app (probably using a modified version of [my gb3ds emulator](https://github.com/AtexBg/gb3ds), which itself is a port of another open-source emulator)
 - More features when i will have more ideas
---------------------------------------------
+
 ###### Fun fact: the program is called **bred-editor** because `bred` is a mix between blue and red, but i thought it sounded like "bread" so i decided to use bread for the icon/banner theme :3
 --------------------------------------------
 Thanks to [DevKitPro](https://devkitpro.org/wiki/Getting_Started) for the toolchain and some code, [this GBATemp thread](https://gbatemp.net/threads/cxitool-convert-3dsx-to-cia-directly.440385/) for the tools to make the CIA app, the [libctru examples](https://github.com/devkitPro/3ds-examples) for the uses of some functions, and [Bulbapedia](https://bulbapedia.bulbagarden.net/wiki/Save_data_structure_(Generation_I)) for the savedata structure.
