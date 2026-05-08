@@ -1,18 +1,17 @@
 # BRED-EDITOR
 
-![The banner](cia/banner.png)
+![The banner](cia/banner_upscaled.png)
 
 ## What is it?
-The **bred-editor** (standing for *blue/red save editor*) is a very simple save editor for Pokémon RED/BLUE saves files on the 3DS, it's still W.I.P but many features are planned to be added later.
+The **bred-editor** (standing for *blue/red save editor*) is a very simple save editor for Pokémon Red/Blue on the 3DS, it's still W.I.P (work in progress) but many features are planned to be added later.
 
 The current version is the `beta0.1.0`, having the following features :
-    
-    - Reading some informations about the save (including Player/Rival name, playtime, money, playerID and initial checksum
+    - Reading some informations about the save (including Player/Rival name, playtime, money, playerID and initial checksum)
     - Editing the Player/Rival names, the money amount and the playtime
     - Properly saving the file and fixing the checksum
 
 
-It's still very rudimentary and bugs may occur, so please have a backup of your savefile before using the tool. 
+I fixed many bugs and every feature should work, but it's not perfect and there is probably still bugs so please keep a backup of your savefile before using the tool. 
 New features will be added in the future versions.
 
 ## Usage :
@@ -32,7 +31,7 @@ Then you can press SELECT on the main menu to **write all changes to the file**.
 ## Future updates
 I'm still working on the project and in the future i will add the following features :
 - Editing data such as PlayerID, Badges, Bag Items, and various flags
-- Editing the Pokémons themselves on the team (that will be funny mhhh)
+- Editing the data of the Pokémons themselves (that will be funny mmhhhh)
 - **Maybe** embed a little emulator inside the app (probably using a modified version of [my gb3ds emulator](https://github.com/AtexBg/gb3ds), which itself is a port of another open-source emulator)
 - More features when i will have more ideas
 --------------------------------------------
