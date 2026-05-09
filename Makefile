@@ -50,6 +50,8 @@ APP_TITLE   :=  bred-editor
 APP_AUTHOR  :=  AtexBg :3
 APP_DESCRIPTION := Simple Gen 1 Pokémon Save Editor
 
+MAKEFLAGS += -j$(shell nproc) #compiles way faster with that
+
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------

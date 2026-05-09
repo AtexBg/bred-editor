@@ -7,6 +7,7 @@
 #include "utils.h"
 #include "load.h"
 #include "checksum.h"
+// #include "random.h"
 
 #define LINE(x) "\x1b[" #x ";1H" //specific line encoding using ANSI sequences
 
@@ -73,9 +74,15 @@ void UI_showSaveInformation(save_t *save){
     printf(LINE(5) "\x1b[36mMoney\x1b[0m : %dP$", money2int(save->money));
     printf(LINE(6) "\x1b[36mPlayer ID\x1b[0m : %05u", save->playerID);
 
-    //note : initial checksum is the checksupm calculated when the save it loaded,
+    int badgesAmount=0;
+    for(int i=0; i<8; i++){
+        if(GET_BIT(save->badges, i)){badgesAmount++;}
+    }
+    printf(LINE(7) "\x1b[36mBadges\x1b[0m : %d", badgesAmount);
+
+    //note : last checksum is the last checksum calculated when the save was loaded or updated,
     //i can't recalculate it each time unless i flush the entire struct to the buffer
-    printf(LINE(25) "\x1b[36mInitial Checksum\x1b[0m : 0x%02X", save->checksum);
+    printf(LINE(25) "\x1b[36mLast Checksum\x1b[0m : 0x%02X", save->checksum);
 
     flushFramebufferAndWaitForVBlank();
     waitForInput();
@@ -181,4 +188,68 @@ void UI_changePlayerOrRivalName(save_t *save){
     }
 
     consoleClear();
+}
+
+//a "troll/joke" function to randomize everything on the save, not fully implemented yet
+// void messUpWithSaveFileWithoutBreakingItJustForFun(save_t *save){
+
+//     for(int i=0; i<3; i++){ //randomize money
+//         save->money[i] = getRandom(0, 99);
+//     }
+
+//     save->badges = getRandom(0x00, 0xFF);
+//     save->playerID[0] = getRandom(0x00, 0xFF);
+//     save->playerID[1] = getRandom(0x00, 0xFF);
+    
+//     save->playtime.hours = getRandom(0x00, 0xFF);
+//     save->playtime.mins = getRandom(0x00, 59);
+//     save->playtime.secs = getRandom(0x00, 59);
+// }
+
+
+const char* getColorFromBadgesByte(int bit){
+    if(bit==1){
+        return "\x1b[32m"; //green
+    } else if(bit==0){
+        return "\x1b[31m"; //red
+    }
+
+    return "fuck it, bit isn't 0 nor 1 so the code doesn't work...";
+}
+
+void UI_changeBadges(save_t *save){
+    consoleClear();
+    char* badgesNames[] = {"Boulder", "Cascade", "Thunder", "Rainbow", "Soul", "Marsh", "Volcano", "Earth"};
+    int selectedBadgeBit = 7;
+    //badges are at 0x2602 in save file btw
+
+    while(true){
+        u32 keys = getInput();
+        if(keys & KEY_UP){selectedBadgeBit--;}// consoleClear();}
+        if(keys & KEY_DOWN){selectedBadgeBit++; }//consoleClear();}
+        if(keys & KEY_START){break;}
+        if(keys & KEY_A){TOGGLE_BIT(save->badges, selectedBadgeBit);}
+        if(keys & KEY_X){save->badges = 0xFF;}
+        if(selectedBadgeBit>7){selectedBadgeBit=0;}
+        if(selectedBadgeBit<0){selectedBadgeBit=7;}
+
+        printf("\x1b[2;1H"); //restore default text cursor position
+        for(int b=0; b<8; b++){
+            if(b == selectedBadgeBit){
+                printf("> %s%d - %s\x1b[0m <    \n", getColorFromBadgesByte(GET_BIT(save->badges, b)), b+1, badgesNames[b]);
+            }else{
+                printf("  %s%d - %s\x1b[0m      \n", getColorFromBadgesByte(GET_BIT(save->badges, b)), b+1, badgesNames[b]);
+            }
+        }
+
+        printf(LINE(26) "\x1b[32mGreen\x1b[0m: OBTAINED");
+        printf(LINE(27) "\x1b[31mRed\x1b[0m: NOT OBTAINED");
+        printf(LINE(29) "--------------------------------------------------");
+        printf(LINE(30) " \x1b[33mX\x1b[0m : Unlock all  | \x1b[33mA\x1b[0m: Toggle badge  |  \x1b[33mSTART\x1b[0m: Exit");
+        flushFramebufferAndWaitForVBlank();
+    }
+
+    //inverting back badges bits because for some reason they're inverted 
+    //edit: no need to, i had just inverted the bit order and not the bits themselves
+    //save->badges = ~save->badges;
 }

@@ -28,6 +28,7 @@ void loadValues(unsigned char *saveFile, save_t *save) {
         save->money[i] = saveFile[ADDR_MONEY+i];
     }
     
+    save->badges = saveFile[ADDR_BADGES]; //badges is a single byte, every bit is a separate badge
     save->playerID = (saveFile[ADDR_PLAYER_ID]*0xFF) + saveFile[ADDR_PLAYER_ID+1];
     
     save->playtime.hours = saveFile[ADDR_PLAYTIME_HOURS];

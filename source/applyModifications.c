@@ -39,7 +39,7 @@ void applyAndWriteSaveFile(save_t *save, char* saveFilePath, unsigned char *save
     savefileBuffer[ADDR_PLAYER_NAME + strlen((const char*)save->name.player)] = 0x50;
     savefileBuffer[ADDR_RIVAL_NAME + strlen((const char*)save->name.rival)] = 0x50;
 
-
+    savefileBuffer[ADDR_BADGES] = save->badges;
     //TODO: add more data here
 
     
@@ -48,6 +48,7 @@ void applyAndWriteSaveFile(save_t *save, char* saveFilePath, unsigned char *save
     uint8_t checksum = calculateChecksum(savefileBuffer);
     printf(LINE(4) "New checksum is \x1b[36m0x%02X\x1b[0m", checksum);
     savefileBuffer[ADDR_CHECKSUM] = checksum;
+    save->checksum = checksum; //update it for further use
 
     printf(LINE(5) "Flushing buffer into file \x1b[33m%s\x1b[0m...", saveFilePath);
     flushFramebufferAndWaitForVBlank();

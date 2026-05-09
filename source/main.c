@@ -5,11 +5,12 @@
 #include "utils.h" //flushFramebufferAndWaitForVBlank();, waitForInput();
 #include "ui.h" //UI_changePlayTime();
 #include "applyModifications.h"
+#include "pokemon.h"
 
-#define APP_VERSION "b0.1.0"
+#define APP_VERSION "b0.2.0"
 #define SAVE_SIZE 0x8000
 
-char* menuEntry[] = {"Display Save Information", "Change Playtime", "Change Player/Rival Names", "Change Money Amount"}; //to fill
+char* menuEntry[] = {"Display Save Information", "Change Playtime", "Change Player/Rival Names", "Change Money Amount", "Read Party Pokemon Stats", "Change Badges"}; //to fill with more options
 int entriesAmount = sizeof(menuEntry) / sizeof(menuEntry[0]);
 int currentSelectedOption = 0;
 char* saveFilePath = "sdmc:/POKEMON.sav";
@@ -23,7 +24,7 @@ int main(){
 
     FILE *savefile = fopen(saveFilePath, "rb"); //open file
     if(!savefile){
-        printf("\x1b[31mERROR: Failed to open file %s.", saveFilePath);
+        printf("\x1b[31mERROR: Failed to open file %s.\n", saveFilePath);
         waitForInput();
         return 69;
     }
@@ -52,7 +53,8 @@ int main(){
                 case 1: UI_changePlayTime(&save); break;
                 case 2: UI_changePlayerOrRivalName(&save); break;
                 case 3: UI_changeMoneyAmount(&save); break;
-                case 4: ; break;
+                case 4: loadPartyPokemonDataToStruct(savefileBuffer); break;
+                case 5: UI_changeBadges(&save); break;
             }
             consoleClear();
         }

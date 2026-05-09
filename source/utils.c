@@ -26,3 +26,7 @@ u32 getInput(){
     hidScanInput();
 	return hidKeysDown();
 }
+
+uint16_t swap16(uint16_t value){
+    return (value >> 8) | (value << 8);
+}
