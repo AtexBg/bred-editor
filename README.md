@@ -30,11 +30,11 @@ Finally you can press SELECT on the main menu to **write all changes to the file
 This save editor have an embed emulator made from [deltabeard's gameboy-c](https://github.com/deltabeard/gameboy-c/) for quick testing, for obvious reasons the ROM file isn't included so you need to place a Pokémon Red/Blue ROM file at `SD:/3ds/bedit/ROM.gb` (versions of any language should work).
 
 ## Screenshots
-![Main Menu](pictures/mainmenu.bmp)
+![Main Menu](pictures/mainmenu.png)
 ---------------------------------
 ![Save Information Menu](pictures/saveinfo.bmp)
 ---------------------------------
-![Gameboy emulator](pictures/gb_emu.bmp)
+![Gameboy emulator](pictures/gb_emu.png)
 ---------------------------------
 ![Pokemon Stats Menu](pictures/pokestats.bmp)
 ---------------------------------
