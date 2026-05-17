@@ -55,4 +55,5 @@ I'm still working on the project and in the future i will add the following feat
 --------------------------------------------
 Thanks to [DevKitPro](https://devkitpro.org/wiki/Getting_Started) for the toolchain and some code, [this GBATemp thread](https://gbatemp.net/threads/cxitool-convert-3dsx-to-cia-directly.440385/) for the tools to make the CIA app, the [libctru examples](https://github.com/devkitPro/3ds-examples) for the uses of some functions, [gameboy-c](https://github.com/deltabeard/gameboy-c/) for the embed emulator code, and [Bulbapedia](https://bulbapedia.bulbagarden.net/wiki/Save_data_structure_(Generation_I)) for the savedata structure.
 
-License GPLv3. By [AtexBg](https://github.com/AtexBg). May 9 2026.
+License GPLv3. By [AtexBg](https://github.com/AtexBg).
+Last update: May 17 2026.
