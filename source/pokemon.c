@@ -4,16 +4,11 @@
 
 #include "utils.h"
 #include "pokemon.h"
+#include "load.h"
 
 #define BASE_PARTY_POKE_ADDRESS 0x2F34
 #define PARTY_POKE_COUNT_ADDRESS 0x2F2C
 #define POKE_STRUCT_SIZE 0x2C
-
-// char* statusConditionsList[] = {"OK", "Asleep", "Poisioned", "Burned", "Frozen", "Paralyzed"};
-// int statusConditionsValues[] = {0x00, 0x04, 0x08, 0x10, 0x20, 0x40};
-
-// char* typesList[] = {"Normal", "Fighting", "Flying", "Poison", "Ground", "Rock", "Bird (unused)", "Bug", "Ghost", "Fire", "Water", "Grass", "Electric", "Psychic", "Ice", "Dragon"};
-// int typesValues[] = {0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A};
 
 //Thanks to `names.asm` from the Pokémon Red decompilation for the names and ID lists
 int   normalPokedexIDs[] = {0, 112, 115, 32, 35, 21, 100, 34, 80, 2, 103, 108, 102, 88, 94, 29, 31, 104, 111, 131, 59, 151, 130, 90, 72, 92, 123, 120, 9, 127, 114, 0, 0, 58, 95, 22, 16, 79, 64, 75, 113, 67, 122, 106, 107, 24, 47, 54, 96, 76, 0, 126, 0, 125, 82, 109, 0, 56, 86, 50, 128, 0, 0, 0, 83, 48, 149, 0, 0, 0, 84, 60, 124, 146, 144, 145, 132, 52, 98, 0, 0, 0, 37, 38, 25, 26, 0, 0, 147, 148, 140, 141, 116, 117, 0, 0, 27, 28, 138, 139, 39, 40, 133, 136, 135, 134, 66, 41, 23, 46, 61, 62, 13, 14, 15, 0, 85, 57, 51, 49, 87, 0, 0, 10, 11, 12, 68, 0, 55, 97, 42, 150, 143, 129, 0, 0, 89, 0, 99, 91, 0, 101, 36, 110, 53, 105, 0, 93, 63, 65, 17, 18, 121, 1, 3, 73, 0, 118, 119, 0, 0, 0, 0, 77, 78, 19, 20, 33, 30, 74, 137, 142, 0, 81, 0, 0, 4, 7, 5, 8, 6, 0, 0, 0, 0, 43, 44, 45, 69, 70, 71};
@@ -42,6 +37,11 @@ const char* getStatusConditionName(uint8_t status){
     return "???";
 }
 
+uint8_t removeUpperBitsOfPPValue(uint8_t value){
+    value = value << 2;
+    return value >> 2;
+}
+
 const char* getTypeName(uint8_t typeValue){
     if(typeValue == 0x00){return "Normal";}
     if(typeValue == 0x01){return "Fighting";}
@@ -62,7 +62,7 @@ const char* getTypeName(uint8_t typeValue){
     return "Unknown";
 }
 
-void loadPartyPokemonDataToStruct(unsigned char* savebuffer){
+void loadPartyPokemonDataToStruct(unsigned char* savebuffer, save_t *save){
     consoleClear();
     int pCount = savebuffer[PARTY_POKE_COUNT_ADDRESS];
     if(pCount==0){ //at least ive implemented a failsafe
@@ -94,7 +94,7 @@ void loadPartyPokemonDataToStruct(unsigned char* savebuffer){
         printf(LINE(2) "             | Stats for \x1b[32m%s \x1b[0m\x1b[2;36H|", pokemonNamesList[party[currentPokemon].speciesID]);
         printf(LINE(3) "             \\---------------------/");
         
-        printf(LINE(5) "/-----------------\\");
+        printf(LINE(5) "/------STATS------\\");
         printf(LINE(6) "|   Level: \x1b[36m%d\x1b[0m     \x1b[6;19H|", party[currentPokemon].level);
         printf(LINE(7) "|      HP: \x1b[36m%hu\x1b[0m/\x1b[36m%hu\x1b[0m \x1b[7;19H|", swap16(party[currentPokemon].currentHP), swap16(party[currentPokemon].maxHP));
         printf(LINE(8) "|  STATUS: \x1b[36m%s\x1b[0m      \x1b[8;19H|", getStatusConditionName(party[currentPokemon].statusCondition));
@@ -102,12 +102,19 @@ void loadPartyPokemonDataToStruct(unsigned char* savebuffer){
         printf(LINE(10)"|     IID: \x1b[36m%03d\x1b[0m    \x1b[10;19H|", party[currentPokemon].speciesID);  //IID = Internal ID used in memory
         printf(LINE(11)"\\-----------------/");
         
-        printf(LINE(13) "/---------------\\");                //swapping endianness of 16bit values 
+        printf(LINE(13) "/-----STATS-----\\");                //swapping endianness of 16bit values 
         printf(LINE(14) "| ATTACK  : \x1b[36m%03hu\x1b[0m |", swap16(party[currentPokemon].Attack));
         printf(LINE(15) "| DEFENSE : \x1b[36m%03hu\x1b[0m |", swap16(party[currentPokemon].Defense));
         printf(LINE(16) "| SPEED   : \x1b[36m%03hu\x1b[0m |", swap16(party[currentPokemon].Speed));
         printf(LINE(17) "| SPECIAL : \x1b[36m%03hu\x1b[0m |", swap16(party[currentPokemon].Special));
         printf(LINE(18) "\\---------------/");
+
+        printf(LINE(20) "/-----MOVES-----\\");
+        printf(LINE(21) "| \x1b[36m%d\x1b[0m\x1b[21;9H| PP:\x1b[36m%02d\x1b[0m |", party[currentPokemon].move1, removeUpperBitsOfPPValue(party[currentPokemon].Move1PPValue));
+        printf(LINE(22) "| \x1b[36m%d\x1b[0m\x1b[22;9H| PP:\x1b[36m%02d\x1b[0m |", party[currentPokemon].move2, removeUpperBitsOfPPValue(party[currentPokemon].Move2PPValue));
+        printf(LINE(23) "| \x1b[36m%d\x1b[0m\x1b[23;9H| PP:\x1b[36m%02d\x1b[0m |", party[currentPokemon].move3, removeUpperBitsOfPPValue(party[currentPokemon].Move3PPValue));
+        printf(LINE(24) "| \x1b[36m%d\x1b[0m\x1b[24;9H| PP:\x1b[36m%02d\x1b[0m |", party[currentPokemon].move4, removeUpperBitsOfPPValue(party[currentPokemon].Move4PPValue));
+        printf(LINE(25) "\\---------------/");
 
         printf(LINE(29) "--------------------------------------------------");
         printf(LINE(30) "\x1b[33mUP\x1b[0m/\x1b[33mDOWN\x1b[0m : Previous/Next Pokemon  |  \x1b[33mSTART\x1b[0m: Go back");
@@ -119,22 +126,3 @@ void loadPartyPokemonDataToStruct(unsigned char* savebuffer){
     consoleClear();
 }
 
-
-
-
-
-
-//thoses are my own notes i used while developpement, 
-//if you read this you can just ignore them
-
-
-//2F2C = party count
-//2F2D - 2F33 = Pokémon species
-
-/*
-pokemons are stored in 44 bytes structs at
-(BASE_PARTY_POKE_ADDRESS + ((pokemon index - 1)*0x2C))
-"pokemon index" is a number between 1 and 6 which is equal or inferior to
-the party count stored at PARTY_POKE_COUNT_ADDRESS.
-See "Full Party Data" at https://bulbapedia.bulbagarden.net/wiki/Save_data_structure_(Generation_I)
-*/

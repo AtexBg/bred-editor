@@ -1,4 +1,5 @@
 #include <3ds.h>
+#include <stdbool.h>
 
 #define LINE(x) "\x1b[" #x ";1H" //specific line encoding using ANSI sequences
 
@@ -11,4 +12,6 @@
 void flushFramebufferAndWaitForVBlank();
 void waitForInput();
 u32 getInput();
+u32 getHeldKeys();
 uint16_t swap16(uint16_t value);
+void clearTopFramebuffer();

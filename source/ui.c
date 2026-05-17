@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <3ds.h>
 #include <stdlib.h> //atoi
-#include <inttypes.h> //used for displaying uint16_t in printf
 #include <string.h> //strlen
 
 #include "utils.h"
 #include "load.h"
 #include "checksum.h"
 // #include "random.h"
+#include "render.h"
+#include "gfx/screensaver.h"
 
 #define LINE(x) "\x1b[" #x ";1H" //specific line encoding using ANSI sequences
 
@@ -18,6 +19,15 @@ char tempTextBuffer[0xFF];
 void UI_changePlayTime(save_t *save){
     consoleClear();
     int csd = 0; //CSD = CurrentlySelectedDigit
+
+    //preload playtime from save structure (doesn't work for some reason)
+    digits[0] = save->playtime.hours / 100;
+    digits[1] = (save->playtime.hours / 10)%10;
+    digits[2] = save->playtime.hours % 10;
+    digits[3] = (save->playtime.mins / 10)%10;
+    digits[4] = save->playtime.mins % 10;
+    digits[5] = (save->playtime.secs / 10)%10;
+    digits[6] = save->playtime.secs % 10;
 
     while(1){
         u32 keys = getInput();
@@ -61,6 +71,7 @@ void UI_changePlayTime(save_t *save){
 
     save->playtime.mins = (digits[3]*10 + digits[4]);
     save->playtime.secs = (digits[5]*10 + digits[6]);
+    save->hasUnsavedChanges = true;
 }
 
 void UI_showSaveInformation(save_t *save){
@@ -113,6 +124,8 @@ void UI_changeMoneyAmount(save_t *save){
     for(int i=0; i<3; i++){
         save->money[i] = moneyAmountToApply[i];
     }
+
+    save->hasUnsavedChanges = true;
 }
 
 void UI_changePlayerOrRivalName(save_t *save){ 
@@ -145,10 +158,10 @@ void UI_changePlayerOrRivalName(save_t *save){
         
     }
 
-    char enteredName[16];
+    char enteredName[9];
     static SwkbdState swkbd;
     consoleClear();
-    UI_changePlayerOrRivalName_startlabel:
+    retry:
 
     printf(LINE(1) "Enter new %s name :", playerOrRival);
     flushFramebufferAndWaitForVBlank();
@@ -163,12 +176,13 @@ void UI_changePlayerOrRivalName(save_t *save){
 
     if(strlen(enteredName) > 7){
         consoleClear();
-        printf(LINE(2) "Name is too long, choose one with less than 7 characters.");
-        printf(LINE(3) "Press any key to continue...");
+        printf(LINE(2) "The name is too long, choose one with");
+        printf(LINE(3) "less than 7 characters.");
+        printf(LINE(4) "Press any key to continue...");
         flushFramebufferAndWaitForVBlank();
         waitForInput();
         consoleClear();
-        goto UI_changePlayerOrRivalName_startlabel;
+        goto retry;
     }
 
     printf(LINE(2) "Will apply new name %s for the %s.", enteredName, playerOrRival);
@@ -176,17 +190,12 @@ void UI_changePlayerOrRivalName(save_t *save){
     waitForInput();
 
     if(!strcmp(playerOrRival, "Player")){ //strcmp returns 0, so i invert the result 
-        for(int c=0; c<strlen(enteredName); c++){ //it's funny how "c++" is basically a valid C instruction
-            strncpy((char*)save->name.player, enteredName, 11);
-        }
-
+        strncpy((char*)save->name.player, enteredName, 11);
     }else{
-        for(int c=0; c<strlen(enteredName); c++){
-            strncpy((char*)save->name.rival, enteredName, 11);
-        }
-
+        strncpy((char*)save->name.rival, enteredName, 11);
     }
 
+    save->hasUnsavedChanges = true;
     consoleClear();
 }
 
@@ -214,13 +223,13 @@ const char* getColorFromBadgesByte(int bit){
         return "\x1b[31m"; //red
     }
 
-    return "fuck it, bit isn't 0 nor 1 so the code doesn't work...";
+    return "fuck it, bit isn't 0 nor 1 so the code doesn't work..."; //this line should never be reached, it it does there's nothing to do.
 }
 
 void UI_changeBadges(save_t *save){
     consoleClear();
     char* badgesNames[] = {"Boulder", "Cascade", "Thunder", "Rainbow", "Soul", "Marsh", "Volcano", "Earth"};
-    int selectedBadgeBit = 7;
+    int selectedBadgeBit = 0;
     //badges are at 0x2602 in save file btw
 
     while(true){
@@ -228,7 +237,7 @@ void UI_changeBadges(save_t *save){
         if(keys & KEY_UP){selectedBadgeBit--;}// consoleClear();}
         if(keys & KEY_DOWN){selectedBadgeBit++; }//consoleClear();}
         if(keys & KEY_START){break;}
-        if(keys & KEY_A){TOGGLE_BIT(save->badges, selectedBadgeBit);}
+        if(keys & KEY_A){TOGGLE_BIT(save->badges, selectedBadgeBit); save->hasUnsavedChanges = true;}
         if(keys & KEY_X){save->badges = 0xFF;}
         if(selectedBadgeBit>7){selectedBadgeBit=0;}
         if(selectedBadgeBit<0){selectedBadgeBit=7;}
@@ -252,4 +261,53 @@ void UI_changeBadges(save_t *save){
     //inverting back badges bits because for some reason they're inverted 
     //edit: no need to, i had just inverted the bit order and not the bits themselves
     //save->badges = ~save->badges;
+}
+
+void displayScreensaver(){
+    int x = 107;
+    int y = 57;
+    int state=2;
+
+    while(1){
+        if(getInput() & KEY_START){break;}
+        clearTopFramebuffer();
+
+        if(state==0){x++; y++;}
+        if(state==1){x++; y--;}
+        if(state==2){x--; y--;}
+        if(state==3){x--; y++;}
+
+        if(x>=400-tfs.width){
+            if(state==1){
+                state=2;
+            } else {
+                state=3;
+            }
+        }
+        if(x<=0){
+            if(state==3){
+                state=0;
+            } else {
+                state=1;
+            }
+        }
+        if(y>=240-tfs.height){
+            if(state==0){
+                state=1;
+            } else {
+                state=2;
+            }
+        }
+        if(y<=0){
+            if(state==1){
+                state=0;
+            } else {
+                state=3;
+            }
+        }
+
+        if(x>400){x=107; y=57; state=2;}
+        displayImage(&tfs, x, y, TOP_LCD);
+        flushFramebufferAndWaitForVBlank();
+    }
 }

@@ -1,1 +1,1 @@
-void applyAndWriteSaveFile(save_t *save, char* saveFilePath, unsigned char *savefileBuffer);
+void applyAndWriteSaveFile(save_t *save, char* saveFilePath, unsigned char *savefileBuffer, int isLoadingGbEmulator);

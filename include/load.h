@@ -28,6 +28,7 @@ typedef struct save_t{
     }playtime;
 
     uint8_t checksum;                   //0x3523
+    bool hasUnsavedChanges;     //not in the savefile itself
 } save_t;
 
 

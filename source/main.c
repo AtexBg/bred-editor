@@ -1,32 +1,40 @@
 #include <3ds.h>
 #include <stdio.h>
 #include <stdlib.h> //malloc
+#include <string.h>
 
 #include "utils.h" //flushFramebufferAndWaitForVBlank();, waitForInput();
 #include "ui.h" //UI_changePlayTime();
 #include "applyModifications.h"
 #include "pokemon.h"
+#include "render.h"
+#include "gameboy_emu.h"
 
-#define APP_VERSION "b0.2.0"
+#define APP_VERSION "b0.3.0"
 #define SAVE_SIZE 0x8000
 
-char* menuEntry[] = {"Display Save Information", "Change Playtime", "Change Player/Rival Names", "Change Money Amount", "Read Party Pokemon Stats", "Change Badges"}; //to fill with more options
+char* menuEntry[] = {"Display Save Information", "Change Playtime", "Change Player/Rival Names", "Change Money Amount", "Read Party Pokemon Stats", "Change Badges", "Launch Save on Emulator"}; //to fill with more options
 int entriesAmount = sizeof(menuEntry) / sizeof(menuEntry[0]);
 int currentSelectedOption = 0;
-char* saveFilePath = "sdmc:/POKEMON.sav";
+char* saveFilePath = "sdmc:/3ds/bedit/SAVE.sav";
 
 int main(){
     //init
     romfsInit();
 	gfxInitDefault();
+
+    //set fb format to RGB565 so the display funcs will work properly
+    gfxSetScreenFormat(GFX_TOP, GSP_RGB565_OES);
+    gfxSetScreenFormat(GFX_BOTTOM, GSP_RGB565_OES);
+    
     consoleInit(GFX_TOP, NULL);
-    // consoleInit(GFX_BTM, NULL);
 
     FILE *savefile = fopen(saveFilePath, "rb"); //open file
     if(!savefile){
-        printf("\x1b[31mERROR: Failed to open file %s.\n", saveFilePath);
+        printf(LINE(1) "\x1b[31mFailed to open file %s.\n", saveFilePath);
+        printf(LINE(2) "\x1b[0mIt probably just doesn't exist...\n");
         waitForInput();
-        return 69;
+        return 42;
     }
 
     //load save into buffer
@@ -49,16 +57,16 @@ int main(){
 
         if(keys & KEY_A){
             switch(currentSelectedOption){
-                case 0: UI_showSaveInformation(&save);; break; //todo: add more options 
+                case 0: UI_showSaveInformation(&save); break; //todo: add more options 
                 case 1: UI_changePlayTime(&save); break;
                 case 2: UI_changePlayerOrRivalName(&save); break;
                 case 3: UI_changeMoneyAmount(&save); break;
-                case 4: loadPartyPokemonDataToStruct(savefileBuffer); break;
+                case 4: loadPartyPokemonDataToStruct(savefileBuffer, &save); break;
                 case 5: UI_changeBadges(&save); break;
+                case 6: applyAndWriteSaveFile(&save, saveFilePath, savefileBuffer, true); runEmulator(); break;
             }
             consoleClear();
         }
-        
 
         //display options
         for(int i=0; i < entriesAmount; i++){
@@ -68,19 +76,21 @@ int main(){
             printf("\x1b[%d;2H%s\x1b[0m", i+4, menuEntry[i]);
         }
 
+        //some ANSI mess, i like that
         printf(LINE(22) "                        /----------------------\\");
         printf(LINE(23) "                        |\x1b[33mUP\x1b[0m/\x1b[33mDOWN\x1b[0m : Navigate    |");
         printf(LINE(24) "                        |\x1b[33mA\x1b[0m : Select option     |");
         printf(LINE(25) "                        |\x1b[33mL\x1b[0m+\x1b[33mR\x1b[0m : Quit BRED-EDITOR|");
         printf(LINE(26) "                        |\x1b[33mSELECT\x1b[0m: \x1b[31mAPPLY CHANGES\x1b[0m |");
         printf(LINE(27) "                        \\----------------------/");
+        if(save.hasUnsavedChanges){printf(LINE(28) "\x1b[31mUnsaved Changes Detected, press SELECT before quit\x1b[0m");}
         printf(LINE(29) "--------------------------------------------------");
         printf(LINE(30) "\x1b[33mhttps://github.com/AtexBg/bred-editor @ May 2026\x1b[0m");
 
 		if((keys & KEY_L) && (keys & KEY_R)){break;} //quit if L and R are pressed
         
         if(keys & KEY_SELECT){
-            applyAndWriteSaveFile(&save, saveFilePath, savefileBuffer);
+            applyAndWriteSaveFile(&save, saveFilePath, savefileBuffer, false);
         }
 
         flushFramebufferAndWaitForVBlank();

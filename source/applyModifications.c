@@ -10,7 +10,7 @@
 #include "checksum.h"
 #include "text.h"
 
-void applyAndWriteSaveFile(save_t *save, char* saveFilePath, unsigned char *savefileBuffer){
+void applyAndWriteSaveFile(save_t *save, char* saveFilePath, unsigned char *savefileBuffer, int isLoadingGbEmulator){
     consoleClear();
     printf(LINE(1) "Opening file \x1b[33m%s\x1b[0m", saveFilePath);
     flushFramebufferAndWaitForVBlank();
@@ -55,8 +55,11 @@ void applyAndWriteSaveFile(save_t *save, char* saveFilePath, unsigned char *save
     fwrite(savefileBuffer, 1, 0x8000, savefile);
     fclose(savefile);
 
-    printf(LINE(6) "Done! Press any key to continue...");
-    flushFramebufferAndWaitForVBlank();
-    waitForInput();
+    save->hasUnsavedChanges = false;
+    if(!isLoadingGbEmulator){
+        printf(LINE(6) "Done! Press any key to continue...");
+        flushFramebufferAndWaitForVBlank();
+        waitForInput();
+    }
     consoleClear();
 }

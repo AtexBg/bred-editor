@@ -36,6 +36,7 @@ void loadValues(unsigned char *saveFile, save_t *save) {
     save->playtime.secs = saveFile[ADDR_PLAYTIME_SECS];
 
     save->checksum = calculateChecksum(saveFile);
+    save->hasUnsavedChanges = false;
 }
 
 int money2int(uint8_t money[3]) {

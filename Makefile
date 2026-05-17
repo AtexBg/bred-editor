@@ -58,7 +58,7 @@ MAKEFLAGS += -j$(shell nproc) #compiles way faster with that
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 
 CFLAGS	:=	-g -Wall -O2 -Iinclude -mword-relocations \
-			-ffunction-sections \
+			-ffunction-sections -Wno-sequence-point\
 			$(ARCH)
 
 CFLAGS	+=	$(INCLUDE) -D__3DS__

@@ -1,5 +1,7 @@
 #include <stdint.h>
 
+#include "load.h"
+
 //setting the compiler alignement to 1 byte, so no padding will be added
 #pragma pack(push, 1)
 
@@ -53,4 +55,4 @@ typedef struct pokemon_t{
 //restore normal compiler behaviour
 #pragma pack(pop)
 
-void loadPartyPokemonDataToStruct(unsigned char* savebuffer);
+void loadPartyPokemonDataToStruct(unsigned char* savebuffer, save_t *save);
