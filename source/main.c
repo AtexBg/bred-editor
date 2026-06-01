@@ -1,3 +1,4 @@
+//why are you looking in there?
 #include <3ds.h>
 #include <stdio.h>
 #include <stdlib.h> //malloc
@@ -9,14 +10,16 @@
 #include "pokemon.h"
 #include "render.h"
 #include "gameboy_emu.h"
+#include "items.h"
 
-#define APP_VERSION "b0.3.0"
+#define APP_VERSION "b0.4.0"
 #define SAVE_SIZE 0x8000
 
-char* menuEntry[] = {"Display Save Information", "Change Playtime", "Change Player/Rival Names", "Change Money Amount", "Read Party Pokemon Stats", "Change Badges", "Launch Save on Emulator"}; //to fill with more options
+char* menuEntry[] = {"Display Save Information", "Change Playtime", "Change Player/Rival Names", "Change Money Amount", "Read Party Pokemon Stats", "Change Badges", "Bag Items Editor", "Launch Save on Emulator"}; //to fill with more options
 int entriesAmount = sizeof(menuEntry) / sizeof(menuEntry[0]);
 int currentSelectedOption = 0;
 char* saveFilePath = "sdmc:/3ds/bedit/SAVE.sav";
+char* backupsavepath = "sdmc:/3ds/bedit/BACKUP.sav";
 
 int main(){
     //init
@@ -42,8 +45,17 @@ int main(){
     fread(savefileBuffer, 1, SAVE_SIZE, savefile); //copy file contents to buffer
     fclose(savefile);
 
+    //backup the sav file
+    FILE *save_sav = fopen(backupsavepath, "wb"); //open file to write to
+    fwrite(savefileBuffer, 1, 0x8000, save_sav);
+    fclose(save_sav);
+
     save_t save = {0};
     loadValues(savefileBuffer, &save);
+
+    pokemon_t party[save.pokemonCount];
+    item_t bag[save.bagItemsCount];
+
 	while (aptMainLoop()){
         u32 keys = getInput();
 
@@ -61,9 +73,10 @@ int main(){
                 case 1: UI_changePlayTime(&save); break;
                 case 2: UI_changePlayerOrRivalName(&save); break;
                 case 3: UI_changeMoneyAmount(&save); break;
-                case 4: loadPartyPokemonDataToStruct(savefileBuffer, &save); break;
+                case 4: loadPartyPokemonDataToStruct(savefileBuffer, &save, party); break;
                 case 5: UI_changeBadges(&save); break;
-                case 6: applyAndWriteSaveFile(&save, saveFilePath, savefileBuffer, true); runEmulator(); break;
+                case 6: editBagItems(savefileBuffer, bag, &save); break;
+                case 7: applyAndWriteSaveFile(&save, saveFilePath, savefileBuffer, party, bag, true); runEmulator(); break;
             }
             consoleClear();
         }
@@ -89,8 +102,17 @@ int main(){
 
 		if((keys & KEY_L) && (keys & KEY_R)){break;} //quit if L and R are pressed
         
+        if((keys & KEY_X) && (keys & KEY_Y)){
+            restoreBackedUpSaveFile();
+            consoleClear();
+            printf(LINE(1) "Succesfully restored backup, program will quit.");
+            printf(LINE(2) "Press any key to continue...");
+            waitForInput();
+            break;
+        }
+
         if(keys & KEY_SELECT){
-            applyAndWriteSaveFile(&save, saveFilePath, savefileBuffer, false);
+            applyAndWriteSaveFile(&save, saveFilePath, savefileBuffer, party, bag, false);
         }
 
         flushFramebufferAndWaitForVBlank();

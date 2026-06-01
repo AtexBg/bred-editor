@@ -9,8 +9,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <3ds.h>
-#include <string.h> //mempcy();
-#include <time.h> //nanosleep();
+#include <string.h> //mempcy() and strcmp
 
 #include "gameboy_core.h"
 #include "utils.h"
@@ -25,10 +24,24 @@ int currentFps;
 u32 COLORS_Y[4] = {0xFFFFFFFF, 0x99999999, 0x44444444, 0x00000000};
 u32* color_map;
 
-uint8_t colorPalette[4][3] = {
+uint8_t colorPalette_BW[4][3] = {
 	{0x00, 0x00, 0x00},
 	{0x40, 0x40, 0x40},
 	{0xA0, 0xA0, 0xA0},
+	{0xFF, 0xFF, 0XFF},
+};
+
+uint8_t colorPalette_RED[4][3] = {
+	{0x00, 0x00, 0x00},
+	{0x00, 0x00, 0xFF},
+	{0x63, 0xA5, 0xFF},
+	{0xFF, 0xFF, 0XFF},
+};
+
+uint8_t colorPalette_BLUE[4][3] = {
+	{0x00, 0x00, 0x00},
+	{0x94, 0x3A, 0x3A},
+	{0xFF, 0x84, 0x84},
 	{0xFF, 0xFF, 0XFF},
 };
 
@@ -80,10 +93,24 @@ void runEmulator(){
 	rewind(rom_f);
 	rom = (u8*)malloc(rom_size);
 	for (i = 0; i < rom_size; i++)
-		rom[i] = 0xFF;
+		rom[i] = 0xFF; //fill rom buffer with 0xFF bytes
 
-	fread(rom, sizeof(u8), rom_size, rom_f);
+	fread(rom, sizeof(u8), rom_size, rom_f); //copy file data to rom buffer
 	fclose(rom_f);
+	
+	//fetch game name from 0x13C and check it to apply a proper color plaette
+	char gameName[5];
+	for(int i=0; i<5; i++){
+		gameName[i] = rom[0x013C+i];
+	}
+
+	uint8_t (*palette)[3] = colorPalette_BW;
+	if(!strcmp(gameName, "RED")){
+		palette = colorPalette_RED;
+	}
+	if(!strcmp(gameName, "BLUE")){
+		palette = colorPalette_BLUE;
+	}
 
 	save_size = GetSaveSize(rom);
 	save = (u8*)malloc(save_size);
@@ -135,9 +162,9 @@ void runEmulator(){
 			{
 				uint8_t v = fb[y][x] & 3;
 
-				uint8_t r = colorPalette[v][0];
-				uint8_t g = colorPalette[v][1];
-				uint8_t b = colorPalette[v][2];
+				uint8_t r = palette[v][0];
+				uint8_t g = palette[v][1];
+				uint8_t b = palette[v][2];
 
 				framebuffer[LCD_HEIGHT-y+48 + (x+120)*240] =
 					((r >> 3)) |

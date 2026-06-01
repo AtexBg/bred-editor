@@ -14,3 +14,4 @@ typedef struct image_t {
 } image_t;
 
 void displayImage(image_t* image, int x, int y, int screen);
+void renderTextWithGameBoyFont(unsigned char* text, int length, int lineX, int lineY);

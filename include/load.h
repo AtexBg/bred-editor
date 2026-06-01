@@ -28,6 +28,9 @@ typedef struct save_t{
     }playtime;
 
     uint8_t checksum;                   //0x3523
+    uint8_t pokemonCount;               //0x2F2C
+    uint8_t bagItemsCount;              //0x25C9
+    
     bool hasUnsavedChanges;     //not in the savefile itself
 } save_t;
 
@@ -35,6 +38,6 @@ typedef struct save_t{
 void loadValues(unsigned char *saveFile, save_t *save);
 int money2int(uint8_t money[3]);
 void int2money(int interger, int *money);
-
+void restoreBackedUpSaveFile();
 
 #endif

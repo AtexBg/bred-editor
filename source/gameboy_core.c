@@ -9,10 +9,13 @@
 #include <string.h>      // memset()
 #include <unistd.h>
 #include <stdbool.h>
-#include <stdio.h>
 
 #include "gameboy_core.h"
 #include "utils.h"
+
+// // Declaring bool type in C
+// typedef enum { false, true  } bool;
+
 // CART /////////////////////////////
 u8* ROM;
 u8* CRAM;
@@ -167,7 +170,7 @@ u8 READ(u16 addr)
 
 		case 0xA:
 		case 0xB:
-			if (gb_cram && cram_enable) //fauly line here
+			if (gb_cram && cram_enable)
 			{
 				if (gb_mbc == 3 && cram_bank >= 0x08)
 					return gb_rtc[cram_bank - 0x08];
@@ -2382,8 +2385,8 @@ void UpdateP1()
 void KeyPress(u8 key)
 {
 	gb_keys |= 0x01 << key;
-	// printf(LINE(6) "key: %d", key);
 	UpdateP1();
+	//R_IF |= CONTROL_INTR;
 }
 
 void KeyRelease(u8 key)

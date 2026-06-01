@@ -55,4 +55,4 @@ typedef struct pokemon_t{
 //restore normal compiler behaviour
 #pragma pack(pop)
 
-void loadPartyPokemonDataToStruct(unsigned char* savebuffer, save_t *save);
+void loadPartyPokemonDataToStruct(unsigned char* savebuffer, save_t *save, pokemon_t *party);

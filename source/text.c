@@ -19,7 +19,7 @@ char gbchar2char(int hex) {
         
     switch(hex) {
         case 0xF4: return ',';
-        case 0x50: return '\0'; // end of string
+        case 0x50: return '\0';
         case 0x7F: return ' ';
         case 0x00: return ' ';
 

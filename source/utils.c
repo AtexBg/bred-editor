@@ -10,7 +10,7 @@ void flushFramebufferAndWaitForVBlank(){
 }
 
 void waitForInput(){
-    while(true){ 
+    while(true){
         hidScanInput();
         u32 keys = hidKeysDown();
 

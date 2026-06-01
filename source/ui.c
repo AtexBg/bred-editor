@@ -79,8 +79,10 @@ void UI_showSaveInformation(save_t *save){
     //update checksum (removed because useless : savefileBuffer isn't modified yet while save struct is)
     //save->checksum = calculateChecksum(savefileBuffer);
 
-    printf(LINE(2) "\x1b[36mPlayer Name\x1b[0m : %s", save->name.player);
-    printf(LINE(3) "\x1b[36mRival Name\x1b[0m : %s", save->name.rival);
+    printf(LINE(2) "\x1b[36mPlayer Name\x1b[0m :");
+    printf(LINE(3) "\x1b[36mRival Name\x1b[0m  :");
+    renderTextWithGameBoyFont(save->name.player, 11, 14, 2);
+    renderTextWithGameBoyFont(save->name.rival, 11, 14, 3);
     printf(LINE(4) "\x1b[36mPlaytime\x1b[0m : %03d:%02d:%02d", save->playtime.hours, save->playtime.mins, save->playtime.secs);
     printf(LINE(5) "\x1b[36mMoney\x1b[0m : %dP$", money2int(save->money));
     printf(LINE(6) "\x1b[36mPlayer ID\x1b[0m : %05u", save->playerID);
@@ -128,7 +130,7 @@ void UI_changeMoneyAmount(save_t *save){
     save->hasUnsavedChanges = true;
 }
 
-void UI_changePlayerOrRivalName(save_t *save){ 
+void UI_changePlayerOrRivalName(save_t *save){
     consoleClear();
     printf(LINE(1) "Change player of rival name?");
     int csd = 0;
@@ -200,9 +202,9 @@ void UI_changePlayerOrRivalName(save_t *save){
 }
 
 //a "troll/joke" function to randomize everything on the save, not fully implemented yet
-// void messUpWithSaveFileWithoutBreakingItJustForFun(save_t *save){
+// void messUpWithSaveFileWithoutBreakingItJustForFun(save_t *save)}
 
-//     for(int i=0; i<3; i++){ //randomize money
+//     for(int i=0; i<3; i++)} //randomize money
 //         save->money[i] = getRandom(0, 99);
 //     }
 

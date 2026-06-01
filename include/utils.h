@@ -1,5 +1,9 @@
 #include <3ds.h>
-#include <stdbool.h>
+
+//simulating <stdbool.h> features without actually including it
+//a must-have in C programming ofc
+#define true 1
+#define false 0
 
 #define LINE(x) "\x1b[" #x ";1H" //specific line encoding using ANSI sequences
 
